@@ -1,0 +1,247 @@
+.table-detail-container {
+  display: flex;
+  padding: 20px;
+  background-color: #f4f4f4;
+  height: 100vh;
+  gap: 20px;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.sidebar-menu {
+  width: calc(15%);
+  background-color: #f9f9f9;
+  color: black;
+  padding: 15px;
+  margin-right: 20px;
+  height: calc(100vh - 40px);
+  border-radius: 0px 20px 20px 0px;
+
+  overflow-y: auto;
+  transform: translateX(-100%);
+  animation: slideIn 0.5s ease-in-out forwards;
+}
+
+.sidebar-menu.show {
+  transform: translateX(0);
+}
+
+.sidebar-subcategories {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.subcategory {
+  padding: 10px;
+  cursor: pointer;
+  background-color: #f0f0f0;
+  transition: background-color 0.2s, transform 0.2s ease-in-out;
+  transform: scale(1);
+}
+
+.subcategory:hover {
+  background-color: #e6e6e6;
+  transform: scale(1.05);
+}
+
+.products-container {
+  padding: 20px;
+  width: calc(50%);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  animation: fadeInUp 1s ease-out;
+}
+
+.product-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  width: fit-content;
+  height: fit-content;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.product-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+.orders-container {
+  position: fixed;
+  top: 14%;
+  right: 0%;
+  width: calc(20%);
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  animation: slideInRight 0.5s ease-out;
+}
+
+.orders-container h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.orders-container ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.orders-container li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 1rem;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.orders-container li:last-child {
+  border-bottom: none;
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-item span {
+  font-weight: 500;
+}
+
+.edit-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.edit-controls button {
+  background-color: #ff6b6b;
+  color: #fff;
+  font-size: 1rem;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.edit-controls button:hover {
+  background-color: #ff4c4c;
+}
+
+.edit-controls button:active {
+  background-color: #ff3333;
+}
+
+.order-quantity,
+.order-price {
+  font-weight: 600;
+}
+
+.order-quantity {
+  margin-right: 8px;
+}
+
+.table-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+  animation: fadeInLeft 1s ease-out;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+}
+
+.quantity-controls button {
+  border: none;
+  background-color: #007bff;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 0 5px;
+}
+
+.quantity-controls button:hover {
+  background-color: #0056b3;
+}
+
+.add-all-btn {
+  background-color: #28a745;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.add-all-btn:hover {
+  background-color: #218838;
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+

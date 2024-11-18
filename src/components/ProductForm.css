@@ -1,0 +1,71 @@
+/* ProductForm.css */
+
+.product-form-container {
+    display: flex;
+    flex-direction: row;
+  }
+  
+  .sidebar-open {
+    /* Add styles for when the sidebar is open */
+  }
+  
+  .product-form-content {
+    flex: 1;
+    padding: 20px;
+    background-color: #f9f9f9;
+  }
+  
+  .product-form-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .product-form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .product-form-input,
+  
+  .ingredient-quantity-input,
+  .ingredient-select {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .ingredients-title {
+    margin-top: 20px;
+    font-size: 20px;
+  }
+  
+  .ingredient-field {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .ingredient-select {
+    flex: 1;
+    margin-right: 10px;
+  }
+  
+  .add-ingredient-button,
+  .submit-product-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 15px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  
+  .add-ingredient-button:hover,
+  .submit-product-button:hover {
+    background-color: #218838;
+  }
+
+  
+  

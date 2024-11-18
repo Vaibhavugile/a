@@ -1,0 +1,40 @@
+.report-container {
+    padding: 20px;
+  }
+  
+  .report-card {
+    border: 1px solid #ccc;
+    margin-bottom: 20px;
+    padding: 10px;
+  }
+  
+  .report-card h3 {
+    margin-top: 0;
+  }
+  
+  ul {
+    list-style-type: none;
+    padding-left: 0;
+  }
+  
+  ul li {
+    padding: 5px 0;
+  }
+
+  .report-card table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  .report-card th, .report-card td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .report-card th {
+    background-color: #f2f2f2;
+  }
+  
+  

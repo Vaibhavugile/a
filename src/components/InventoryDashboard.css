@@ -1,0 +1,223 @@
+/* InventoryDashboard.css */
+
+/* Basic Styling */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f6f8;
+}
+
+/* Container Styling */
+.dashboard-container {
+  display: flex;
+  transition: margin-left 0.3s ease;
+}
+.sidebar-open .dashboard-content {
+  margin-left: 250px; /* Sidebar width */
+}
+
+/* Sidebar Styling */
+.dashboard-container .UserSidebar {
+  width: 250px;
+  background-color: #333;
+  color: #fff;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  transition: width 0.3s ease;
+}
+.dashboard-container .UserSidebar.closed {
+  width: 0;
+}
+
+/* Dashboard Content */
+.dashboard-content {
+  flex: 1;
+  margin-left: 0px;
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+.dashboard-content h2 {
+  font-size: 1.8em;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Header Styling */
+.UserHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #2a3f54;
+  color: #fff;
+  padding: 10px 20px;
+}
+.UserHeader button {
+  background: none;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2em;
+}
+
+/* Table Styling */
+.table-container {
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+.vendor-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.vendor-table th,
+.vendor-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+.vendor-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #555;
+}
+.vendor-table td {
+  color: #333;
+}
+.vendor-table tr:hover {
+  background-color: #f2f2f2;
+}
+.vendor-table .expanded-row td {
+  background-color: #f9f9f9;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+.add-product-button {
+  display: flex;
+  align-items: center;
+  background-color: #2a3f54;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.add-product-button:hover {
+  background-color: #1d2e3d;
+}
+.add-product-button svg {
+  margin-right: 5px;
+}
+
+/* Edit Button */
+.edit-btn {
+  background-color: #f1c40f;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+}
+.edit-btn:hover {
+  background-color: #d4ac0d;
+}
+
+/* Details Table */
+.details-table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+.details-table th,
+.details-table td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+.details-table th {
+  background-color: #e9ecef;
+  font-weight: 600;
+}
+.stock-details-table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+  border-radius: 8px;
+}
+.stock-details-table th,
+.stock-details-table td {
+  padding: 6px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+.stock-details-table th {
+  background-color: #f2f2f2;
+}
+
+/* Amount Details Styling */
+.amount-details {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #e9ecef;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+.amount-details label {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+.amount-details input[type='number'] {
+  width: 100px;
+  padding: 5px;
+  font-size: 1em;
+  margin-left: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* Save Button */
+.save-btn {
+  background-color: #28a745;
+  color: #fff;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 10px;
+  transition: background-color 0.3s ease;
+}
+.save-btn:hover {
+  background-color: #218838;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  .dashboard-content {
+    margin-left: 0;
+    padding: 15px;
+  }
+  .sidebar-open .dashboard-content {
+    margin-left: 0;
+  }
+  .add-product-button {
+    padding: 6px 10px;
+    font-size: 0.9em;
+  }
+}

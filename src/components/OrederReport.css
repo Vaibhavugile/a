@@ -1,0 +1,208 @@
+/* Report container styling */
+.report-container {
+    display: flex;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background-color: #f4f7fa;
+    transition: margin-left 0.3s ease;
+  }
+  
+  .report-container.sidebar-open .report-content {
+    margin-left: 250px;
+  }
+  
+  /* Sidebar and header space */
+  .report-content {
+    flex-grow: 1;
+    padding: 20px;
+    transition: margin-left 0.3s ease;
+  }
+  
+  /* Header and title styling */
+  h2, h3 {
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  h2 {
+    font-size: 1.8rem;
+    margin-top: 0;
+  }
+  
+  h3 {
+    font-size: 1.4rem;
+    margin-top: 20px;
+  }
+  
+  /* Summary and trends */
+  .report-summary {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    transition: transform 0.3s;
+  }
+  
+  .report-summary:hover {
+    transform: translateY(-4px);
+  }
+  
+  /* Date and search filters */
+  .date-filter,
+  .search-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .date-filter label,
+  .search-filter label {
+    font-weight: bold;
+    color: #555;
+  }
+  
+  .date-filter input,
+  .search-filter input {
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+    transition: box-shadow 0.2s ease;
+  }
+  
+  .date-filter input:focus,
+  .search-filter input:focus {
+    box-shadow: 0 0 4px #007bff;
+  }
+  
+  /* Top items */
+  .top-items ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .top-items li {
+    background: #f9fafb;
+    border: 1px solid #eee;
+    padding: 8px;
+    margin: 4px 0;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .top-items li:hover {
+    background-color: #e0f7fa;
+  }
+  
+  /* Report cards */
+  .report-card {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    transition: transform 0.3s;
+  }
+  
+  .report-card:hover {
+    transform: translateY(-4px);
+  }
+  
+  /* Table summary */
+  .table-summary p {
+    margin: 8px 0;
+    color: #555;
+  }
+  
+  /* Order section tables */
+  .order-section h4 {
+    margin-top: 20px;
+    font-size: 1.2rem;
+    color: #444;
+  }
+  
+  .order-table, .order-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  
+  .order-table th, .order-table td,
+  .order-history-table th, .order-history-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    color: #333;
+  }
+  
+  .order-table th, .order-history-table th {
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  .order-table tbody tr:nth-child(even),
+  .order-history-table tbody tr:nth-child(even) {
+    background-color: #f4f7fa;
+  }
+  
+  .order-table tbody tr:hover,
+  .order-history-table tbody tr:hover {
+    background-color: #e0f7fa;
+    cursor: pointer;
+  }
+  
+  /* Loading text */
+  .report-content p {
+    font-size: 1rem;
+    color: #555;
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  /* Smooth transitions for inputs and buttons */
+  input[type="date"],
+  input[type="text"] {
+    transition: border-color 0.3s, background-color 0.3s;
+  }
+  
+  input[type="date"]:hover,
+  input[type="text"]:hover {
+    border-color: #007bff;
+  }
+  
+  input[type="date"]:focus,
+  input[type="text"]:focus {
+    border-color: #007bff;
+    background-color: #e7f3ff;
+  }
+  
+  button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+  }
+  
+  button:active {
+    transform: translateY(1px);
+  }
+  

@@ -1,0 +1,101 @@
+/* StockManagementForm.css */
+
+/* General styles */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Container for the form */
+  .stock-management-container {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Headings */
+  .stock-management-container h2 {
+    text-align: center;
+    color: #333;
+  }
+  
+  .stock-management-container h3 {
+    color: #555;
+  }
+  
+  /* Labels */
+.stock-management-container label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #444;
+  }
+  
+  /* Input and select styles */
+  .stock-management-container input[type="date"],
+  .stock-management-container input[type="number"]
+  {
+    width: 87%;
+    padding: 8px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  .stock-management-container select {
+    width: 90%;
+    padding: 8px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  /* Disabled select styling */
+  .stock-management-container select:disabled {
+    background-color: #e9ecef;
+  }
+  
+  /* Button styles */
+  .stock-management-container button {
+    /* padding: 10px 15px; */
+    margin-top: 10px;
+    background-color: #28a745; /* Green color */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Button hover effect */
+  .stock-management-container button:hover {
+    background-color: #218838;
+  }
+  
+  /* List of stock entries */
+  .stock-management-container ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 10px 0;
+  }
+  
+  .stock-management-container li {
+    background-color: #f1f1f1;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  /* Entry details */
+  .stock-management-container li span {
+    color: #555;
+  }
+  

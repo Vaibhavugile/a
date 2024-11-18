@@ -1,0 +1,25 @@
+/* Style for the suggestions dropdown */
+.suggestions-list {
+    position: absolute;
+    width: 18%;
+    max-height: 120px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow-y: auto;
+    margin-top: 2px;
+    margin-left: 10px;
+    list-style-type: none;
+    padding: 0;
+    z-index: 10;
+  }
+  
+  .suggestions-list li {
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  
+  .suggestions-list li:hover {
+    background-color: #f0f0f0;
+  }
+  
