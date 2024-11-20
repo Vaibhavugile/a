@@ -43,14 +43,17 @@ const ProductList = () => {
   const handleImportCSV = (event) => {
     const file = event.target.files[0];
     if (!file) return;
-
+  
     Papa.parse(file, {
       header: true, // Parse the CSV as JSON objects
       skipEmptyLines: true,
       complete: async (result) => {
         try {
-          const importedProducts = result.data;
-
+          const importedProducts = result.data.map((product) => ({
+            ...product,
+            price: Number(product.price), // Convert price to a number
+          }));
+  
           // Add each product to Firestore
           const batchPromises = importedProducts.map(async (product) => {
             await addDoc(collection(db, 'products'), {
@@ -58,7 +61,7 @@ const ProductList = () => {
               branchCode: userData.branchCode, // Ensure branchCode is set
             });
           });
-
+  
           await Promise.all(batchPromises);
           alert('Products imported successfully!');
           window.location.reload(); // Refresh to display new products
@@ -73,6 +76,7 @@ const ProductList = () => {
       },
     });
   };
+  
   const handleDelete  = () => {
     // Logic to navigate to Add Product page
   };
