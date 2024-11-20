@@ -138,22 +138,29 @@ const InventoryDashboard = () => {
                       </div>
                     </td>
                     {/* Display History only when the item is selected */}
-                    {selectedItem === item.id && (
-                      <td colSpan="7">
-                        {inventoryHistory[item.id] && (
-                          <ul>
-                            {inventoryHistory[item.id].map((history, index) => (
-                              <li key={index}>
-                                <strong>Updated on:</strong> {new Date(history.updatedAt.seconds * 1000).toLocaleString()}<br />
-                                <strong>Quantity Added:</strong> {history.quantityAdded}<br />
-                                <strong>Price:</strong> {history.price}<br />
-                                <strong>Updated Quantity:</strong> {history.updatedQuantity}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </td>
-                    )}
+                    <td>
+  {selectedItem === item.id && (
+    <td colSpan="7">
+      <div className={`history-section ${selectedItem === item.id ? 'show' : ''}`}>
+        {inventoryHistory[item.id] && (
+          <ul>
+            {inventoryHistory[item.id].map((history, index) => (
+              <li key={index}>
+                <strong>Updated on:</strong> {new Date(history.updatedAt.seconds * 1000).toLocaleString()}<br />
+                <strong>Quantity Added:</strong> {history.quantityAdded}<br />
+                <strong>Price:</strong> {history.price}<br />
+                <strong>Updated Quantity:</strong> {history.updatedQuantity}
+                <strong>Action:</strong> {history.action}
+                <strong >Current Quantity:</strong>{history.quantity}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </td>
+  )}
+</td>
+                   
                   </tr>
                 ))}
               </tbody>

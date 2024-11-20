@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import './EditInventory.css'; // You can add styles here
 
@@ -41,14 +41,34 @@ const EditInventory = () => {
   const handleSave = async () => {
     try {
       const docRef = doc(db, 'Inventory', id);
+      
+      // First, get the current inventory details to store in history
+      const currentInventoryData = { 
+        ingredientName, 
+        category, 
+        quantity: parseInt(quantity), 
+        unit 
+      };
+
+      // Add the current inventory data to history subcollection
+      const historyRef = collection(docRef, 'History');
+      await addDoc(historyRef, {
+        ...currentInventoryData,
+        
+        updatedAt: new Date(),
+        action: 'Update' // You can add more fields like action type (e.g., Update, Add, Delete)
+      });
+
+      // Now, update the inventory with the new values
       await updateDoc(docRef, {
         ingredientName,
         category,
         quantity: parseInt(quantity),
         unit,
-        lastUpdated: new Date(),
+        lastUpdated: new Date(), // Optionally, include the date when the item was last updated
       });
-      navigate('/inventorydashboard'); // Redirect to the inventory dashboard
+
+      navigate('/inventorydashboard'); // Redirect to the inventory dashboard after save
     } catch (error) {
       console.error('Error updating inventory item:', error);
     }

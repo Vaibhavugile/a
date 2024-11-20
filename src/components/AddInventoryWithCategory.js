@@ -74,13 +74,26 @@ function AddIngredient() {
     const storedUnit = unit === 'kilograms' ? 'grams' : unit === 'liters' ? 'milliliters' : unit;
     
     try {
+      // Step 1: Add ingredient to Inventory collection
       const docRef = await addDoc(collection(db, 'Inventory'), {
         ingredientName,
         category,
-        quantity:  standardizedQuantity,
-        unit:storedUnit,
+        quantity: standardizedQuantity,
+        unit: storedUnit,
         branchCode,
       });
+  
+      // Step 2: Add ingredient to history subcollection
+      const historyRef = collection(docRef, 'history');
+      await addDoc(historyRef, {
+        ingredientName,
+        category,
+        quantity: standardizedQuantity,
+        unit: storedUnit,
+        branchCode,
+        timestamp: new Date(),
+      });
+  
       alert('Ingredient added successfully!');
       navigate('/inventorydashboard');
       setIngredientName('');
@@ -91,6 +104,7 @@ function AddIngredient() {
       console.error("Error adding ingredient: ", error);
     }
   };
+  
 
   return (
     <div>

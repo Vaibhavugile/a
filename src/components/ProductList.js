@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where,addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import UserSidebar from './UserSidebar';
 import UserHeader from './UserHeader';
@@ -7,6 +7,7 @@ import { useUser } from './Auth/UserContext';
 import { FaDownload, FaUpload, FaPlus , FaEdit, FaTrash} from 'react-icons/fa';
 import './InventoryDashboard.css'; // Import the same CSS file
 import { useNavigate } from 'react-router-dom';
+import Papa from 'papaparse';
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
@@ -38,11 +39,40 @@ const ProductList = () => {
     // Logic to export products
   };
 
-  const handleImport = (event) => {
-    const file = event.target.files[0];
-    // Logic to handle import
-  };
 
+  const handleImportCSV = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    Papa.parse(file, {
+      header: true, // Parse the CSV as JSON objects
+      skipEmptyLines: true,
+      complete: async (result) => {
+        try {
+          const importedProducts = result.data;
+
+          // Add each product to Firestore
+          const batchPromises = importedProducts.map(async (product) => {
+            await addDoc(collection(db, 'products'), {
+              ...product,
+              branchCode: userData.branchCode, // Ensure branchCode is set
+            });
+          });
+
+          await Promise.all(batchPromises);
+          alert('Products imported successfully!');
+          window.location.reload(); // Refresh to display new products
+        } catch (error) {
+          console.error('Error importing products:', error);
+          alert('Failed to import products. Please check the file format.');
+        }
+      },
+      error: (error) => {
+        console.error('Error reading CSV file:', error);
+        alert('Error reading the file. Please try again.');
+      },
+    });
+  };
   const handleDelete  = () => {
     // Logic to navigate to Add Product page
   };
@@ -65,7 +95,16 @@ const ProductList = () => {
         <label className="add-product-button" onClick={handleAddProduct}>
           <FaPlus />
               Add Product
-            </label> 
+         </label> 
+         <label className="import-product-button">
+            <FaUpload /> Import Products
+            <input
+              type="file"
+              accept=".csv"
+              onChange={handleImportCSV}
+              style={{ display: 'none' }}
+            />
+          </label>
           
           
         </div>
