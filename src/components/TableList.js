@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState ,useRef} from 'react';
 import { collection, getDocs, doc, updateDoc, query, where, getDoc,addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Link,useNavigate } from 'react-router-dom';
@@ -7,6 +7,7 @@ import UserHeader from './UserHeader';
 import './TableList.css';
 import { useUser } from './Auth/UserContext'; // Assuming you're using a UserContext for branchCode
 import { FaSearch, FaFilter, FaDownload, FaUpload, FaPlus, FaEdit, FaTrash, FaCopy } from 'react-icons/fa';
+import { CakeSharp } from '@mui/icons-material';
 
 
 const TableList = () => {
@@ -20,9 +21,10 @@ const TableList = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false); 
   const [branchCode, setBranchCode] = useState(''); // Store branch code
   const { userData } = useUser(); // Get user data from context
-  const [showBill, setShowBill] = useState(false);
+  const [showBill, setShowBill] = useState(false); // Toggle for bill printing
   const navigate = useNavigate();
-
+  const billRef = useRef(null); 
+ 
   const handleSidebarToggle = () => {
     setSidebarOpen(!sidebarOpen); 
   };
@@ -137,13 +139,13 @@ const TableList = () => {
         orders: selectedTable.orders,
         payment: {
           total: totalPrice,
-          discountedTotal: discountedPrice, 
-          discountPercentage, 
+          discountedTotal: discountedPrice,
+          discountPercentage,
           status: paymentStatus,
           method: paymentMethod,
           responsible: paymentStatus === 'Due' ? responsibleName : null,
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       };
   
       if (paymentStatus === 'Settled') {
@@ -160,21 +162,22 @@ const TableList = () => {
       }
   
       try {
-        // Add the payment and order details as a new document in the 'orders' subcollection
-        const orderRef = await addDoc(collection(tableRef, 'orders'), {
+        // Save payment and order details to the 'orders' subcollection
+        await addDoc(collection(tableRef, 'orders'), {
           payment: {
             total: totalPrice,
             discountedTotal: discountedPrice,
             discountPercentage,
             status: paymentStatus,
             method: paymentMethod,
-            responsible: paymentStatus === 'Due' ? responsibleName : null
+            responsible: paymentStatus === 'Due' ? responsibleName : null,
           },
           orders: selectedTable.orders,
-          orderStatus:  updatedOrderStatus,
-          timestamp: new Date().toISOString() // Add timestamp for the order
+          orderStatus: updatedOrderStatus,
+          timestamp: new Date().toISOString(), // Add timestamp for the order
         });
-
+  
+        // Update table details in Firestore
         await updateDoc(tableRef, {
           orders: [], // Clear the orders in the table document
           orderHistory: previousOrders,
@@ -184,22 +187,144 @@ const TableList = () => {
         // Update ingredient quantities
         await updateIngredientQuantities(selectedTable.orders);
   
-        // Optionally, you could add this order ID to the order history if needed
-      
-        alert('Payment details saved successfully');
+        // Update local state to reflect changes
+        setTables((prevTables) =>
+          prevTables.map((table) =>
+            table.id === selectedTable.id
+              ? { ...table, orders: [], orderStatus: updatedOrderStatus }
+              : table
+          )
+        );
+  
+        alert('Payment details saved successfully.');
         handleClosePaymentModal();
       } catch (error) {
-        console.error("Error saving payment details: ", error);
+        console.error('Error saving payment details: ', error);
       }
     } else {
       alert('Please select a payment method and status');
     }
   };
   
-    const handlePrint = () => {
-    window.print(); // This will trigger the print dialog
-    setShowBill(false); // Hide the bill after printing
+  
+  const printBill = () => {
+    if (billRef.current) {
+      // Open a new window for printing
+      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Bill</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                margin: 20px;
+                color: #333;
+              }
+              .bill-container {
+                max-width: 600px;
+                margin: 0 auto;
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                padding: 20px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+              }
+              .bill-header {
+                text-align: center;
+                margin-bottom: 20px;
+              }
+              .bill-header h1 {
+                font-size: 24px;
+                margin: 0;
+                color: #444;
+              }
+              .bill-header p {
+                font-size: 14px;
+                margin: 5px 0;
+                color: #666;
+              }
+              .bill-summary {
+                margin-bottom: 20px;
+              }
+              .bill-summary p {
+                margin: 5px 0;
+                font-size: 16px;
+              }
+              .bill-summary .total {
+                font-weight: bold;
+                font-size: 18px;
+                margin-top: 10px;
+              }
+              .order-details {
+                margin-bottom: 20px;
+              }
+              .order-details ul {
+                list-style-type: none;
+                padding: 0;
+              }
+              .order-details ul li {
+                margin: 5px 0;
+                font-size: 14px;
+              }
+              .footer {
+                text-align: center;
+                margin-top: 20px;
+                font-size: 14px;
+                color: #666;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="bill-container">
+              <div class="bill-header">
+                <h1>Restaurant Name</h1>
+                <p>Address Line 1, Address Line 2</p>
+                <p>Phone: +91-XXXXXXXXXX</p>
+                <p>Date: ${new Date().toLocaleDateString()}</p>
+              </div>
+              <div class="order-details">
+                <h3>Order Details:</h3>
+                <ul>
+                  ${selectedTable?.orders
+                    .map(
+                      (order) =>
+                        `<li>${order.quantity} x ${order.name} - ₹${order.price * order.quantity}</li>`
+                    )
+                    .join('')}
+                </ul>
+              </div>
+              <div class="bill-summary">
+                <p>Table Number: ${selectedTable?.tableNumber}</p>
+                <p>Total Price: ₹${calculateTotalPrice(selectedTable?.orders || [])}</p>
+                <p>Discount: ${discountPercentage}%</p>
+                <p class="total">Final Price: ₹${calculateDiscountedPrice(calculateTotalPrice(selectedTable?.orders || []), discountPercentage)}</p>
+              </div>
+              
+              <div class="bill-summary">
+                <p>Payment Method: ${paymentMethod}</p>
+                <p>Payment Status: ${paymentStatus}</p>
+                ${
+                  paymentStatus === 'Due'
+                    ? `<p>Responsible Person: ${responsibleName}</p>`
+                    : ''
+                }
+              </div>
+              <div class="footer">
+                <p>Thank you for dining with us!</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print(); // Trigger print dialog
+      printWindow.close(); // Close the print window
+    }
   };
+  
+  
+
 
   const handleAddProduct = () => {
     navigate('/add-table');
@@ -361,6 +486,7 @@ const TableList = () => {
           )}
 
           <button onClick={handleSavePayment}>Save Payment</button>
+          <button onClick={printBill}>Print Bill</button>
           <button onClick={handleClosePaymentModal}>Cancel</button>
         </>
       ) : (
@@ -371,6 +497,24 @@ const TableList = () => {
     </div>
   </div>
 )}
+     <div ref={billRef} style={{ display: 'none' }}>
+        <h1>Bill for Table {selectedTable?.tableNumber}</h1>
+        <p>Total Price: ₹{calculateTotalPrice(selectedTable?.orders || [])}</p>
+        <p>Discount: {discountPercentage}%</p>
+        <p>Final Price: ₹{calculateDiscountedPrice(calculateTotalPrice(selectedTable?.orders || []), discountPercentage)}</p>
+        <h3>Order Details:</h3>
+        <ul>
+          {selectedTable?.orders.map((order, index) => (
+            <li key={index}>
+              {order.quantity} x {order.name} - ₹{order.price * order.quantity}
+            </li>
+          ))}
+        </ul>
+        <p>Payment Method: {paymentMethod}</p>
+        <p>Payment Status: {paymentStatus}</p>
+        {paymentStatus === 'Due' && <p>Responsible Person: {responsibleName}</p>}
+        <p>Thank you for dining with us!</p>
+      </div>
       </div>
     </div>
   );

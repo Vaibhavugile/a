@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useUser } from './Auth/UserContext';
-import './AddVendor.css'; // Import the CSS file
+import Select from 'react-select'; // Import React Select for dropdowns
+import './AddVendor.css';
 
 const VendorForm = () => {
   const [name, setName] = useState('');
   const [contactNo, setContactNo] = useState('');
   const [address, setAddress] = useState('');
-  const [categories, setCategories] = useState([]);  // All categories from inventory
+  const [categories, setCategories] = useState([]); // All categories from inventory
   const [selectedCategories, setSelectedCategories] = useState([]); // User-selected categories
-  const [itemsByCategory, setItemsByCategory] = useState({});  // Items grouped by category
-  const [selectedItems, setSelectedItems] = useState({});  // User-selected items by category
+  const [itemsByCategory, setItemsByCategory] = useState({}); // Items grouped by category
+  const [selectedItems, setSelectedItems] = useState({}); // User-selected items by category
   const { userData } = useUser();
 
   // Fetch categories and items based on branchCode from Inventory
@@ -23,7 +24,7 @@ const VendorForm = () => {
           where('branchCode', '==', userData.branchCode)
         );
         const snapshot = await getDocs(q);
-        const allItems = snapshot.docs.map(doc => doc.data());
+        const allItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
         // Extract unique categories and group items by category
         const categoriesSet = new Set();
@@ -33,7 +34,7 @@ const VendorForm = () => {
           if (!itemsByCat[item.category]) itemsByCat[item.category] = [];
           itemsByCat[item.category].push({ id: item.id, ...item });
         });
-        
+
         setCategories([...categoriesSet]);
         setItemsByCategory(itemsByCat);
       }
@@ -42,38 +43,31 @@ const VendorForm = () => {
     fetchCategoriesAndItems();
   }, [userData]);
 
-  // Handle category checkbox change
-  const handleCategoryChange = (category) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category) ? prev.filter((cat) => cat !== category) : [...prev, category]
-    );
+  // Handle category selection
+  const handleCategoryChange = (selectedOptions) => {
+    const selectedCategoryNames = selectedOptions.map(option => option.value);
+    setSelectedCategories(selectedCategoryNames);
   };
 
-  // Handle item checkbox change within each category
-  const handleItemChange = (category, itemId) => {
-    setSelectedItems((prev) => {
-      const newSelectedItems = { ...prev };
-      if (!newSelectedItems[category]) newSelectedItems[category] = [];
-      
-      // Toggle item selection
-      if (newSelectedItems[category].includes(itemId)) {
-        newSelectedItems[category] = newSelectedItems[category].filter(id => id !== itemId);
-      } else {
-        newSelectedItems[category].push(itemId);
-      }
-      return newSelectedItems;
-    });
+  // Handle item selection for a specific category
+  const handleItemChange = (category, selectedOptions) => {
+    setSelectedItems(prev => ({
+      ...prev,
+      [category]: selectedOptions.map(option => option.value),
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Collect selected items by category
     const suppliedItems = Object.keys(selectedItems).reduce((acc, category) => {
-      const items = itemsByCategory[category].filter(item => selectedItems[category].includes(item.id));
+      const items = itemsByCategory[category].filter(item =>
+        selectedItems[category].includes(item.id)
+      );
       return acc.concat(items.map(item => item.ingredientName));
     }, []);
-    
+
     try {
       await addDoc(collection(db, "Vendors"), {
         branchCode: userData.branchCode,
@@ -81,7 +75,7 @@ const VendorForm = () => {
         contactNo,
         address,
         categories: selectedCategories,
-        suppliedItems
+        suppliedItems,
       });
       alert('Vendor added successfully!');
       setName('');
@@ -124,44 +118,34 @@ const VendorForm = () => {
         />
 
         <h3 className="vendor-form__category-title">Categories Supplied</h3>
-        {categories.map((category) => (
-          <div key={category}>
-            <label className="vendor-form__label">
-              <input
-                className="vendor-form__checkbox"
-                type="checkbox"
-                checked={selectedCategories.includes(category)}
-                onChange={() => handleCategoryChange(category)}
-              />
-              {category}
-            </label>
+        <Select
+          isMulti
+          options={categories.map(category => ({ value: category, label: category }))}
+          onChange={handleCategoryChange}
+          className="vendor-form__dropdown"
+          placeholder="Select Categories"
+        />
 
-            {/* Show items only if category is selected */}
-            {selectedCategories.includes(category) && (
-              <div style={{ marginLeft: '20px' }}>
-                <h4 className="vendor-form__item-title">Items in {category}</h4>
-                {itemsByCategory[category].map(item => (
-                  <div key={item.id}>
-                    <label className="vendor-form__label">
-                      <input
-                        className="vendor-form__checkbox"
-                        type="checkbox"
-                        checked={
-                          selectedItems[category] &&
-                          selectedItems[category].includes(item.id)
-                        }
-                        onChange={() => handleItemChange(category, item.id)}
-                      />
-                      {item.ingredientName} ({item.quantity} {item.unit})
-                    </label>
-                  </div>
-                ))}
-              </div>
-            )}
+        {/* Show items selection dropdown for each selected category */}
+        {selectedCategories.map((category) => (
+          <div key={category} className="vendor-form__category-items">
+            <h4 className="vendor-form__item-title">Items in {category}</h4>
+            <Select
+              isMulti
+              options={itemsByCategory[category].map(item => ({
+                value: item.id,
+                label: `${item.ingredientName} (${item.quantity} ${item.unit})`,
+              }))}
+              onChange={(selectedOptions) => handleItemChange(category, selectedOptions)}
+              className="vendor-form__dropdown"
+              placeholder={`Select Items from ${category}`}
+            />
           </div>
         ))}
 
-        <button className="vendor-form__button" type="submit">Add Vendor</button>
+        <button className="vendor-form__button" type="submit">
+          Add Vendor
+        </button>
       </form>
     </div>
   );

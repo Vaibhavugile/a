@@ -1,16 +1,16 @@
-import React, { useState , useEffect, } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db } from '../firebase'; // Firebase initialization
-import { collection, addDoc ,where,getDocs,query} from 'firebase/firestore'; // Import addDoc instead of using db.collection directly
-import { useUser } from '../components/Auth/UserContext'; // Assuming you're using a UserContext for branchCode
-import "./AddInventory.css"
-import { useNavigate, useParams } from 'react-router-dom';
+import { collection, addDoc, where, getDocs, query } from 'firebase/firestore';
+import { useUser } from '../components/Auth/UserContext';
+import { useNavigate } from 'react-router-dom';
+import "./AddInventory.css";
 
 function AddIngredient() {
   const [ingredientName, setIngredientName] = useState('');
-  const[category,setCategory]=useState('')
+  const [category, setCategory] = useState('');
   const [quantity, setQuantity] = useState('');
   const [unit, setUnit] = useState('grams');
-  const [branchCode, setBranchCode] = useState(''); // Store branch code
+  const [branchCode, setBranchCode] = useState('');
   const { userData } = useUser();
   const [suggestedCategories, setSuggestedCategories] = useState([]);
   const navigate = useNavigate();
@@ -20,6 +20,7 @@ function AddIngredient() {
       setBranchCode(userData.branchCode);
     }
   }, [userData]);
+
   const fetchCategories = async (input) => {
     if (!input) {
       setSuggestedCategories([]);
@@ -34,47 +35,48 @@ function AddIngredient() {
     );
 
     const querySnapshot = await getDocs(q);
-    const categories = querySnapshot.docs.map(doc => doc.data().category);
+    const categories = querySnapshot.docs.map((doc) => doc.data().category);
     setSuggestedCategories([...new Set(categories)]);
   };
 
   const handleCategoryChange = (e) => {
     const value = e.target.value;
     setCategory(value);
-    fetchCategories(value); // Fetch matching categories as user types
+    fetchCategories(value);
   };
 
   const handleSelectCategory = (selectedCategory) => {
     setCategory(selectedCategory);
-    setSuggestedCategories([]); // Clear suggestions after selection
+    setSuggestedCategories([]);
   };
+
   const convertQuantity = () => {
     const quantityValue = parseFloat(quantity);
-    if (isNaN(quantityValue)) return 0; // Return 0 if quantity is not a number
+    if (isNaN(quantityValue)) return 0;
 
     switch (unit) {
       case 'grams':
-        return quantityValue; // already in grams
+        return quantityValue;
       case 'kilograms':
-        return quantityValue * 1000; // convert kilograms to grams
+        return quantityValue * 1000;
       case 'liters':
-        return quantityValue * 1000; // convert liters to milliliters
+        return quantityValue * 1000;
       case 'milliliters':
-        return quantityValue; // already in milliliters
+        return quantityValue;
       case 'pieces':
       case 'boxes':
-        return quantityValue; // keep as is for pieces and boxes
+        return quantityValue;
       default:
-        return quantityValue; // fallback to input value
+        return quantityValue;
     }
   };
+
   const handleAddIngredient = async () => {
-    // Add new ingredient to Firestore
-    const standardizedQuantity = convertQuantity(); 
-    const storedUnit = unit === 'kilograms' ? 'grams' : unit === 'liters' ? 'milliliters' : unit;
-    
+    const standardizedQuantity = convertQuantity();
+    const storedUnit =
+      unit === 'kilograms' ? 'grams' : unit === 'liters' ? 'milliliters' : unit;
+
     try {
-      // Step 1: Add ingredient to Inventory collection
       const docRef = await addDoc(collection(db, 'Inventory'), {
         ingredientName,
         category,
@@ -82,18 +84,16 @@ function AddIngredient() {
         unit: storedUnit,
         branchCode,
       });
-  
-      // Step 2: Add ingredient to history subcollection
-      const historyRef = collection(docRef, 'history');
+
+      const historyRef = collection(docRef, 'History');
       await addDoc(historyRef, {
-        ingredientName,
-        category,
-        quantity: standardizedQuantity,
-        unit: storedUnit,
+        quantityAdded: standardizedQuantity,
+        updatedQuantity: standardizedQuantity,
+        action: 'Add Inventory',
         branchCode,
-        timestamp: new Date(),
+        updatedAt: new Date(),
       });
-  
+
       alert('Ingredient added successfully!');
       navigate('/inventorydashboard');
       setIngredientName('');
@@ -104,13 +104,13 @@ function AddIngredient() {
       console.error("Error adding ingredient: ", error);
     }
   };
-  
 
   return (
-    <div>
-      <h1>Add New Ingredient</h1>
+    <div className="add-ingredient-container">
+      <h1 className="add-ingredient-title">Add New Ingredient</h1>
       <input
         type="text"
+        className="add-ingredient-input"
         placeholder="Ingredient Category"
         value={category}
         onChange={handleCategoryChange}
@@ -118,7 +118,11 @@ function AddIngredient() {
       {suggestedCategories.length > 0 && (
         <ul className="suggestions-list">
           {suggestedCategories.map((cat, index) => (
-            <li key={index} onClick={() => handleSelectCategory(cat)}>
+            <li
+              key={index}
+              className="suggestion-item"
+              onClick={() => handleSelectCategory(cat)}
+            >
               {cat}
             </li>
           ))}
@@ -126,17 +130,23 @@ function AddIngredient() {
       )}
       <input
         type="text"
+        className="add-ingredient-input"
         placeholder="Ingredient Name"
         value={ingredientName}
         onChange={(e) => setIngredientName(e.target.value)}
       />
-       <input
+      <input
         type="number"
+        className="add-ingredient-input"
         placeholder="Quantity"
         value={quantity}
         onChange={(e) => setQuantity(e.target.value)}
       />
-      <select value={unit} onChange={(e) => setUnit(e.target.value)}>
+      <select
+        value={unit}
+        className="add-ingredient-select"
+        onChange={(e) => setUnit(e.target.value)}
+      >
         <option value="grams">Grams</option>
         <option value="kilograms">Kilograms</option>
         <option value="liters">Liters</option>
@@ -144,10 +154,11 @@ function AddIngredient() {
         <option value="pieces">Pieces</option>
         <option value="boxes">Boxes</option>
       </select>
-      <button onClick={handleAddIngredient}>Add Ingredient</button>
+      <button className="add-ingredient-button" onClick={handleAddIngredient}>
+        Add Ingredient
+      </button>
     </div>
   );
 }
 
 export default AddIngredient;
-

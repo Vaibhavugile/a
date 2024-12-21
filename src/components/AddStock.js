@@ -130,7 +130,7 @@ const StockManagementForm = () => {
         await addDoc(historyRef, {
           invoiceDate: entry.invoiceDate,
           quantityAdded: entry.quantityToAdd,
-          
+          action: 'Add Stock',
           price: entry.price,
           updatedQuantity: newQuantity,
           updatedAt: new Date(),

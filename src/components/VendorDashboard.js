@@ -1,248 +1,280 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, query, where, updateDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, query, where, updateDoc, doc, arrayUnion } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
-import './InventoryDashboard.css';
-import UserHeader from './UserHeader';
-import UserSidebar from './UserSidebar';
 import { useUser } from './Auth/UserContext';
-import { FaPlus, FaEdit } from 'react-icons/fa';
+import './VendorDashboard.css';
+import { FaEdit, FaSave, FaCaretDown, FaCaretUp, FaPlus, FaFileExport } from 'react-icons/fa';
+import UserSidebar from './UserSidebar';
+import UserHeader from './UserHeader';
 
-const VendorPaymentDashboard = () => {
-  const [vendorPayments, setVendorPayments] = useState([]);
+const VendorDashboard = () => {
+  const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [editingVendorId, setEditingVendorId] = useState(null);
   const [expandedVendorId, setExpandedVendorId] = useState(null);
-  const [expandedInvoiceDate, setExpandedInvoiceDate] = useState({});
   const { userData } = useUser();
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [commentData, setCommentData] = useState({
+    amountPaid: '',
+    paidBy: '',
+    date: ''
+  });
 
-  // Fetch vendor payment data
   useEffect(() => {
-    const fetchVendorPayments = async () => {
+    const fetchVendors = async () => {
       if (userData && userData.branchCode) {
         const q = query(collection(db, 'Vendors'), where('branchCode', '==', userData.branchCode));
-        const vendorSnapshot = await getDocs(q);
+        const snapshot = await getDocs(q);
 
-        const paymentsData = await Promise.all(
-          vendorSnapshot.docs.map(async (vendorDoc) => {
-            const vendorData = vendorDoc.data();
-            const stockRef = collection(vendorDoc.ref, 'Stock');
+        const vendorData = await Promise.all(
+          snapshot.docs.map(async (doc) => {
+            const data = doc.data();
+            const stockRef = collection(doc.ref, 'Stock');
             const stockSnapshot = await getDocs(stockRef);
 
-            const stockGroupedByDate = {};
-            const totalPaymentPerDate = {};
-
-            stockSnapshot.docs.forEach((stockDoc) => {
-              const stockData = stockDoc.data();
-              const invoiceDate = stockData.invoiceDate || 'N/A';
-              const price = stockData.price || 0;
-
-              // Group stock by invoice date
-              if (!stockGroupedByDate[invoiceDate]) {
-                stockGroupedByDate[invoiceDate] = [];
-                totalPaymentPerDate[invoiceDate] = 0; // Initialize total for this date
-              }
-              stockGroupedByDate[invoiceDate].push({
-                stockName: stockData.ingredientName || 'N/A',
-                price,
-                stockQuantity: stockData.quantityAdded || 'N/A',
-              });
-
-              // Sum the prices for the total amount per date
-              totalPaymentPerDate[invoiceDate] += price; 
-            });
-
-            return {
-              vendorId: vendorDoc.id,
-              vendorName: vendorData.name,
-              totalPayment: Object.values(totalPaymentPerDate).reduce((a, b) => a + b, 0), // Sum of total payments
-              stockGroupedByDate,
-              totalPaymentPerDate,
-              amountPaid: vendorData.amountPaid || 0, // Amount paid from vendor data
-              remainingAmount: vendorData.remainingAmount || 0, // Remaining amount from vendor data
-            };
+            const stockDetails = stockSnapshot.docs.map((stockDoc) => stockDoc.data());
+            return { id: doc.id, ...data, stockDetails };
           })
         );
 
-        setVendorPayments(paymentsData);
+        setVendors(vendorData);
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    fetchVendorPayments();
+    fetchVendors();
   }, [userData]);
 
-  const handleEdit = (id) => {
-    navigate(`/editvendor/${id}`);
+  const handleEdit = (vendorId) => {
+    setEditingVendorId(vendorId);
+  };
+
+  const handleSidebarToggle = () => {
+    setSidebarOpen(!sidebarOpen);
   };
 
   const handleAddVendor = () => {
     navigate('/add-vendor');
   };
 
-  const toggleVendorDetails = (vendorId) => {
-    setExpandedVendorId(expandedVendorId === vendorId ? null : vendorId);
+  const handleSave = async (vendorId) => {
+    const vendor = vendors.find((v) => v.id === vendorId);
+    const vendorRef = doc(db, 'Vendors', vendorId);
+
+    // Save the comment to the vendor's document
+    await updateDoc(vendorRef, {
+      comments: arrayUnion(commentData), // Add the comment to the "comments" field
+    });
+
+    alert('Vendor details updated!');
+    setEditingVendorId(null);
+    setCommentData({ amountPaid: '', paidBy: '', date: '' }); // Clear the comment form after saving
   };
 
-  const toggleInvoiceDetails = (vendorId, date) => {
-    setExpandedInvoiceDate((prevState) => ({
-      ...prevState,
-      [vendorId]: prevState[vendorId] === date ? null : date,
+  const handleInputChange = (vendorId, field, value) => {
+    setVendors((prev) =>
+      prev.map((vendor) =>
+        vendor.id === vendorId ? { ...vendor, [field]: Number(value) } : vendor
+      )
+    );
+  };
+
+  const handleCommentChange = (e) => {
+    const { name, value } = e.target;
+    setCommentData((prevData) => ({
+      ...prevData,
+      [name]: value
     }));
   };
 
-  const handleSaveAmounts = async (vendorId) => {
-    const vendorDocRef = doc(db, 'Vendors', vendorId);
-    const vendor = vendorPayments.find(v => v.vendorId === vendorId);
-    
-    await updateDoc(vendorDocRef, {
-      amountPaid: vendor.amountPaid,
-      remainingAmount: vendor.remainingAmount,
+  const toggleExpanded = (vendorId) => {
+    setExpandedVendorId(expandedVendorId === vendorId ? null : vendorId);
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Calculate total payment by summing the prices from stockDetails
+  const calculateTotalPayment = (stockDetails, searchQuery) => {
+    // If there's a search query (date), filter stock by that date
+    if (searchQuery) {
+      stockDetails = stockDetails.filter((stock) =>
+        stock.invoiceDate && stock.invoiceDate.includes(searchQuery) // Match by date
+      );
+    }
+    // Sum the price for the filtered stock details
+    return stockDetails.reduce((total, stock) => total + (parseFloat(stock.price) || 0), 0).toFixed(2);
+  };
+
+  // Function to export stock details as CSV
+  const exportToCSV = (stockDetails) => {
+    const csvRows = [];
+    const headers = ['Invoice Date', 'Stock Name', 'Quantity', 'Price'];
+    csvRows.push(headers.join(','));
+
+    stockDetails.forEach((stock) => {
+      const row = [
+        stock.invoiceDate || 'N/A',
+        stock.ingredientName || 'N/A',
+        stock.quantityAdded || '0',
+        stock.price || '0.00',
+      ];
+      csvRows.push(row.join(','));
     });
 
-    alert('Amounts saved successfully!');
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'stock_details.csv');
+    link.click();
   };
 
   return (
-    <div className={`dashboard-container ${sidebarOpen ? 'sidebar-open' : ''}`}>
-      <UserSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+    <div className={`dashboard-container${sidebarOpen ? ' sidebar-open' : ''}`}>
+      <UserSidebar isOpen={sidebarOpen} onToggle={handleSidebarToggle} />
       <div className="dashboard-content">
-        <UserHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        <h2 style={{ marginLeft: '10px', marginTop: '100px' }}>Vendor Payment Dashboard</h2>
-
-        <div className="action-buttons">
-          <label className="add-product-button" onClick={handleAddVendor}>
-            <FaPlus /> Add Vendor
-          </label>
-        </div>
-
-        <div className="table-container">
+        <UserHeader onMenuClick={handleSidebarToggle} isSidebarOpen={sidebarOpen} />
+          <h2 style={{ marginLeft: '10px', marginTop: '100px' }}>Vendor Dashboard</h2>
+          <div className="action-buttons">
+            <label className="add-product-button" onClick={handleAddVendor}>
+              <FaPlus /> Add Vendor
+            </label>
+          </div>
           {loading ? (
-            <div className="loading">Loading vendor payments...</div>
-          ) : vendorPayments.length > 0 ? (
-            <table className="vendor-table">
-              <thead>
-                <tr>
-                  <th>Vendor Name</th>
-                  <th>Total Payment</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {vendorPayments.map((vendor) => (
-                  <React.Fragment key={vendor.vendorId}>
-                    <tr onClick={() => toggleVendorDetails(vendor.vendorId)}>
-                      <td>{vendor.vendorName}</td>
-                      <td>₹{vendor.totalPayment.toFixed(2)}</td>
-                      <td>
-                        <button
-                          className="edit-btn"
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
-                            handleEdit(vendor.vendorId); 
-                          }}
-                          title="Edit Vendor"
-                        >
-                          <FaEdit />
-                        </button>
-                      </td>
-                    </tr>
-                    {expandedVendorId === vendor.vendorId && (
-                      <tr className="expanded-row">
-                        <td colSpan="5">
-                          <table className="details-table">
-                            <thead>
-                              <tr>
-                                <th>Invoice Date</th>
-                                <th>Total Amount</th>
-                                <th>Stock Details</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {Object.entries(vendor.stockGroupedByDate).map(([invoiceDate, stockItems]) => (
-                                <React.Fragment key={invoiceDate}>
-                                  <tr onClick={() => toggleInvoiceDetails(vendor.vendorId, invoiceDate)}>
-                                    <td>{invoiceDate}</td>
-                                    <td>₹{vendor.totalPaymentPerDate[invoiceDate]?.toFixed(2) || '0.00'}</td>
-                                    <td>{expandedInvoiceDate[vendor.vendorId] === invoiceDate ? 'Hide Details' : 'Show Details'}</td>
-                                  </tr>
-                                  {expandedInvoiceDate[vendor.vendorId] === invoiceDate && (
-                                    <tr className="expanded-stock-row">
-                                      <td colSpan="3">
-                                        <table className="stock-details-table">
-                                          <thead>
-                                            <tr>
-                                              <th>Stock Name</th>
-                                              <th>Stock Quantity</th>
-                                              <th>Price</th>
-                                            </tr>
-                                          </thead>
-                                          <tbody>
-                                            {stockItems.map((item, index) => (
-                                              <tr key={index}>
-                                                <td>{item.stockName}</td>
-                                                <td>{item.stockQuantity}</td>
-                                                <td>₹{item.price.toFixed(2)}</td>
-                                              </tr>
-                                            ))}
-                                          </tbody>
-                                        </table>
-                                      </td>
-                                    </tr>
-                                  )}
-                                </React.Fragment>
-                              ))}
-                            </tbody>
-                          </table>
-                          <div className="amount-details">
-                            <label>
-                              Amount Paid:
-                              <input
-                                type="number"
-                                value={vendor.amountPaid}
-                                onChange={(e) => {
-                                  const updatedPayments = vendorPayments.map((v) =>
-                                    v.vendorId === vendor.vendorId ? { ...v, amountPaid: Number(e.target.value) } : v
-                                  );
-                                  setVendorPayments(updatedPayments);
-                                }}
-                              />
-                            </label>
-                            <label>
-                              Remaining Amount:
-                              <input
-                                type="number"
-                                value={vendor.remainingAmount}
-                                onChange={(e) => {
-                                  const updatedPayments = vendorPayments.map((v) =>
-                                    v.vendorId === vendor.vendorId ? { ...v, remainingAmount: Number(e.target.value) } : v
-                                  );
-                                  setVendorPayments(updatedPayments);
-                                }}
-                              />
-                            </label>
-                            <button
-                              className="save-btn"
-                              onClick={() => handleSaveAmounts(vendor.vendorId)}
-                            >
-                              Save
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
+            <p>Loading...</p>
           ) : (
-            <div className="no-data">No vendor payments available.</div>
+            <div className="vendor-grid">
+              {vendors.map((vendor) => (
+                <div key={vendor.id} className="vendor-card">
+                  <div className="vendor-header">
+                    <h2>{vendor.name}</h2>
+                    <button
+                      className="edit-btn"
+                      onClick={() => handleEdit(vendor.id)}
+                      disabled={editingVendorId === vendor.id}
+                    >
+                      <FaEdit /> Edit
+                    </button>
+                  </div>
+                  <div className="vendor-details">
+                    <p>
+                      <strong>Total Payment:</strong> ₹{calculateTotalPayment(vendor.stockDetails, searchQuery)}
+                    </p>
+                  
+                    
+                    <button
+                      className="view-more-btn"
+                      onClick={() => toggleExpanded(vendor.id)}
+                    >
+                      {expandedVendorId === vendor.id ? (
+                        <FaCaretUp /> // Collapse icon
+                      ) : (
+                        <FaCaretDown /> // Expand icon
+                      )}
+                      {expandedVendorId === vendor.id ? ' Show Less' : ' Show More'}
+                    </button>
+                  </div>
+                  {expandedVendorId === vendor.id && (
+                    <div className="expanded-section">
+                      <div className="stock-details">
+                        <h3>Stock Details</h3>
+                        {/* Search bar for stock details */}
+                        <input
+                          type="text"
+                          placeholder="Search by stock date (yyyy-mm-dd)"
+                          value={searchQuery}
+                          onChange={handleSearchChange}
+                          className="search-bar"
+                        />
+                        {/* Export button */}
+                        <button onClick={() => exportToCSV(vendor.stockDetails)} className="export-btn">
+                          <FaFileExport /> Export
+                        </button>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>Invoice Date</th>
+                              <th>Stock Name</th>
+                              <th>Quantity</th>
+                              <th>Price</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {vendor.stockDetails.filter((stock) =>
+                              stock.invoiceDate.includes(searchQuery) // Filter by search query
+                            ).map((stock, index) => (
+                              <tr key={index}>
+                                <td>{stock.invoiceDate}</td>
+                                <td>{stock.ingredientName}</td>
+                                <td>{stock.quantityAdded}</td>
+                                <td>{stock.price}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      {/* Comment section inside expanded (only during edit mode) */}
+                      {editingVendorId === vendor.id && (
+                        <div className="comment-section">
+                          <h3>Add Comment</h3>
+                          <div className="comment-inputs">
+                            <label>Amount Paid:</label>
+                            <input
+                              type="number"
+                              name="amountPaid"
+                              value={commentData.amountPaid}
+                              onChange={handleCommentChange}
+                            />
+                            <label>Paid By:</label>
+                            <input
+                              type="text"
+                              name="paidBy"
+                              value={commentData.paidBy}
+                              onChange={handleCommentChange}
+                            />
+                            <label>Date:</label>
+                            <input
+                              type="date"
+                              name="date"
+                              value={commentData.date}
+                              onChange={handleCommentChange}
+                            />
+                          </div>
+                          <button className="save-btn" onClick={() => handleSave(vendor.id)}>
+                            <FaSave /> Save
+                          </button>
+                        </div>
+                      )}
+                      {/* Display Comments inside expanded */}
+                      <div className="comments">
+                        <h3>Comments</h3>
+                        {vendor.comments && vendor.comments.length > 0 ? (
+                          vendor.comments.map((comment, index) => (
+                            <div key={index} className="comment">
+                              <p><strong>Amount Paid:</strong> ₹{comment.amountPaid}</p>
+                              <p><strong>Paid By:</strong> {comment.paidBy}</p>
+                              <p><strong>Date:</strong> {comment.date}</p>
+                            </div>
+                          ))
+                        ) : (
+                          <p>No comments yet</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
-        </div>
       </div>
     </div>
   );
 };
 
-export default VendorPaymentDashboard;
+export default VendorDashboard;

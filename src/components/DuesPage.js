@@ -175,6 +175,7 @@ const DuesPage = () => {
                   setConfirmPopup({ ...confirmPopup, newMethod: e.target.value })
                 }
               >
+                <option value="">Select Payment Method</option>
                 <option value="Cash">Cash</option>
                 <option value="Card">Card</option>
                 <option value="UPI">UPI</option>

@@ -88,3 +88,20 @@
         font-size: 14px; /* Smaller button text on smaller screens */
     }
 }
+
+.vendor-form__dropdown {
+    margin: 10px 0;
+    width: 100%;
+    font-size: 14px;
+  }
+  
+  .vendor-form__category-items {
+    margin: 20px 0;
+  }
+  
+  .vendor-form__item-title {
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  
